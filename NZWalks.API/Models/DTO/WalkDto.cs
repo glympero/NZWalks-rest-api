@@ -17,6 +17,5 @@ namespace NZWalks.API.Models.DTO
         public required DifficultyDto Difficulty { get; set; }
 
         public required RegionDto Region { get; set; }
-
     }
 }

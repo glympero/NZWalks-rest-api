@@ -21,9 +21,23 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetWalks([FromQuery] string? filterOn, [FromQuery] string? filterQuery)
+        public async Task<IActionResult> GetWalks(
+            [FromQuery] string? filterOn,
+            [FromQuery] string? filterQuery,
+            [FromQuery] string? sortBy,
+            [FromQuery] bool? isAscending,
+            [FromQuery] int? pageNumber,
+            [FromQuery] int? pageSize
+        )
         {
-            var walks = await walkRepository.GetWalksAsync(filterOn, filterQuery);
+            var walks = await walkRepository.GetWalksAsync(
+                filterOn,
+                filterQuery,
+                sortBy,
+                isAscending ?? true,
+                pageNumber ?? 1,
+                pageSize ?? 10
+            );
             return Ok(mapper.Map<IEnumerable<WalkDto>>(walks));
         }
 
@@ -46,12 +60,19 @@ namespace NZWalks.API.Controllers
 
             walkDomain = await walkRepository.CreateWalkAsync(walkDomain);
 
-            return CreatedAtAction(nameof(GetWalk), new { id = walkDomain.Id }, mapper.Map<WalkDto>(walkDomain));
+            return CreatedAtAction(
+                nameof(GetWalk),
+                new { id = walkDomain.Id },
+                mapper.Map<WalkDto>(walkDomain)
+            );
         }
 
         [HttpPut("{id}")]
         [ValidateModel]
-        public async Task<IActionResult> UpdateWalk(Guid id, [FromBody] UpdateWalkRequestDto updateWalkRequestDto)
+        public async Task<IActionResult> UpdateWalk(
+            Guid id,
+            [FromBody] UpdateWalkRequestDto updateWalkRequestDto
+        )
         {
             var walk = await walkRepository.GetWalkByIdAsync(id);
             if (walk == null)

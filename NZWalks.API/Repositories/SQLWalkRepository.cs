@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using NZWalks.API.Data;
 using NZWalks.API.Models.Domain;
 
@@ -12,12 +13,12 @@ namespace NZWalks.API.Repositories
         {
             this.dbContext = dbContext;
         }
+
         public async Task<Walk> CreateWalkAsync(Walk walk)
         {
-           await dbContext.AddAsync(walk);
+            await dbContext.AddAsync(walk);
             await dbContext.SaveChangesAsync();
             return walk;
-
         }
 
         public async Task<Walk?> DeleteWalkAsync(Guid walkId)
@@ -36,7 +37,10 @@ namespace NZWalks.API.Repositories
 
         public async Task<Walk?> GetWalkByIdAsync(Guid walkId)
         {
-            var walkDomain = await dbContext.Walks.Include("Difficulty").Include("Region").FirstOrDefaultAsync(w => w.Id == walkId);
+            var walkDomain = await dbContext
+                .Walks.Include("Difficulty")
+                .Include("Region")
+                .FirstOrDefaultAsync(w => w.Id == walkId);
 
             if (walkDomain == null)
             {
@@ -45,20 +49,48 @@ namespace NZWalks.API.Repositories
             return walkDomain;
         }
 
-        public async Task<IEnumerable<Walk>> GetWalksAsync(string? filterOn = null, string? fiterQuery = null)
+        public async Task<IEnumerable<Walk>> GetWalksAsync(
+            string? filterOn = null,
+            string? fiterQuery = null,
+            string? sortBy = null,
+            bool isAscending = true,
+            int pageNumber = 1,
+            int pageSize = 10
+        )
         {
             var walks = dbContext.Walks.Include("Difficulty").Include("Region").AsQueryable();
 
-            if (string.IsNullOrWhiteSpace(filterOn) == false && string.IsNullOrWhiteSpace(fiterQuery) == false)
-            { 
-                if(filterOn.Equals("name", StringComparison.OrdinalIgnoreCase))
+            if (
+                string.IsNullOrWhiteSpace(filterOn) == false
+                && string.IsNullOrWhiteSpace(fiterQuery) == false
+            )
+            {
+                if (filterOn.Equals("name", StringComparison.OrdinalIgnoreCase))
                 {
                     walks = walks.Where(w => w.Name.Contains(fiterQuery));
                 }
-                
             }
 
+            if (string.IsNullOrWhiteSpace(sortBy) == false)
+            {
+                if (sortBy.Equals("name", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending
+                        ? walks.OrderBy(w => w.Name)
+                        : walks.OrderByDescending(w => w.Name);
+                }
+                else if (sortBy.Equals("length", StringComparison.OrdinalIgnoreCase))
+                {
+                    walks = isAscending
+                        ? walks.OrderBy(w => w.LengthInKm)
+                        : walks.OrderByDescending(w => w.LengthInKm);
+                }
+            }
 
+            if (pageNumber > 0)
+            {
+                walks = walks.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
 
             return await walks.ToListAsync();
             //return await dbContext.Walks.Include("Difficulty").Include("Region").ToListAsync();

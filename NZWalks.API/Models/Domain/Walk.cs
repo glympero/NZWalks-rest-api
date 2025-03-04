@@ -20,6 +20,5 @@
         public required Difficulty Difficulty { get; set; }
 
         public required Region Region { get; set; }
-
     }
 }

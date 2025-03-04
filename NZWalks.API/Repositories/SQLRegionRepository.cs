@@ -12,6 +12,7 @@ namespace NZWalks.API.Repositories
         {
             this.dbContext = dbContext;
         }
+
         public async Task<Region> CreateRegionAsync(Region region)
         {
             await dbContext.Regions.AddAsync(region);
@@ -55,11 +56,9 @@ namespace NZWalks.API.Repositories
             regionDomain.Name = region.Name;
             regionDomain.RegionImgUrl = region.RegionImgUrl;
 
-
             //dbContext.Regions.Update(regionDomain); // update is not needed since the regionDomain is already tracked by dbContext
             await dbContext.SaveChangesAsync();
             return regionDomain;
-
         }
     }
 }

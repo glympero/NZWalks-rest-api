@@ -8,6 +8,5 @@
         public required string Name { get; set; }
 
         public string? RegionImgUrl { get; set; }
-
     }
 }

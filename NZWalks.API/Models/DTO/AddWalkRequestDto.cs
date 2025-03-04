@@ -1,5 +1,5 @@
-﻿using NZWalks.API.Models.Domain;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using NZWalks.API.Models.Domain;
 
 namespace NZWalks.API.Models.DTO
 {

@@ -23,7 +23,5 @@ namespace NZWalks.API.Models.DTO
 
         [Required]
         public required Guid RegionId { get; set; }
-
-        
     }
 }
