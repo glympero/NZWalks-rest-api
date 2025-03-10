@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NZWalks.API.CustomActionFilters;
 using NZWalks.API.Models.Domain;
@@ -19,7 +20,9 @@ namespace NZWalks.API.Controllers
             this.regionRepository = regionRepository;
             this.mapper = mapper;
         }
+
         [HttpGet]
+        [Authorize(Roles = "Reader,Writer")]
         public async Task<IActionResult> GetRegions()
         {
             var regionsDomain = await regionRepository.GetRegionsAsync();
@@ -42,6 +45,7 @@ namespace NZWalks.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Reader,Writer")]
         public async Task<IActionResult> GetRegion(Guid id)
         {
             // this can be used to search also for x.Code == "AUK" etc
@@ -68,7 +72,10 @@ namespace NZWalks.API.Controllers
 
         [HttpPost]
         [ValidateModel]
-        public async Task<IActionResult> CreateRegion([FromBody] AddRegionRequestDto addRegionRequestDto)
+        [Authorize(Roles = "Writer")]
+        public async Task<IActionResult> CreateRegion(
+            [FromBody] AddRegionRequestDto addRegionRequestDto
+        )
         {
             //map or convert DTO to Domain Model
             //var regionDomain = new Region
@@ -77,7 +84,7 @@ namespace NZWalks.API.Controllers
             //    Name = addRegionRequestDto.Name,
             //    RegionImgUrl = addRegionRequestDto.RegionImgUrl
             //};
-           
+
             var regionDomain = mapper.Map<Region>(addRegionRequestDto);
 
             regionDomain = await regionRepository.CreateRegionAsync(regionDomain);
@@ -93,12 +100,15 @@ namespace NZWalks.API.Controllers
             //    RegionImgUrl = regionDomain.RegionImgUrl
             //};
             return CreatedAtAction(nameof(GetRegion), new { id = regionDto.Id }, regionDto);
-
         }
 
         [HttpPut("{id}")]
         [ValidateModel]
-        public async Task<IActionResult> UpdateRegion(Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
+        [Authorize(Roles = "Writer")]
+        public async Task<IActionResult> UpdateRegion(
+            Guid id,
+            [FromBody] UpdateRegionRequestDto updateRegionRequestDto
+        )
         {
             //var regionDomain = new Region
             //{
@@ -107,32 +117,31 @@ namespace NZWalks.API.Controllers
             //    Name = updateRegionRequestDto.Name,
             //    RegionImgUrl = updateRegionRequestDto.RegionImgUrl
             //};
-                var regionDomain = mapper.Map<Region>(updateRegionRequestDto);
+            var regionDomain = mapper.Map<Region>(updateRegionRequestDto);
 
-                regionDomain = await regionRepository.UpdateRegionAsync(id, regionDomain);
-                if (regionDomain == null)
-                {
-                    return NotFound();
-                }
-                var regionDto = mapper.Map<RegionDto>(regionDomain);
-                //var regionDto = new RegionDto
-                //{
-                //    Id = regionDomain.Id,
-                //    Code = regionDomain.Code,
-                //    Name = regionDomain.Name,
-                //    RegionImgUrl = regionDomain.RegionImgUrl
-                //};
-                return Ok(regionDto);
+            regionDomain = await regionRepository.UpdateRegionAsync(id, regionDomain);
+            if (regionDomain == null)
+            {
+                return NotFound();
+            }
+            var regionDto = mapper.Map<RegionDto>(regionDomain);
+            //var regionDto = new RegionDto
+            //{
+            //    Id = regionDomain.Id,
+            //    Code = regionDomain.Code,
+            //    Name = regionDomain.Name,
+            //    RegionImgUrl = regionDomain.RegionImgUrl
+            //};
+            return Ok(regionDto);
         }
-         
-       
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Writer")]
         public async Task<IActionResult> DeleteRegion(Guid id)
         {
             var regionDomain = await regionRepository.DeleteRegionAsync(id);
 
-            if(regionDomain == null)
+            if (regionDomain == null)
             {
                 return NotFound();
             }
@@ -148,9 +157,5 @@ namespace NZWalks.API.Controllers
             //};
             return Ok(regionDto); //not necessary to return back the deleted object
         }
-
-        
-
-        
     }
 }
