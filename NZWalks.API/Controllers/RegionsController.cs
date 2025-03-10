@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Text.Json;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NZWalks.API.CustomActionFilters;
@@ -14,19 +15,23 @@ namespace NZWalks.API.Controllers
     {
         private readonly IRegionRepository regionRepository;
         private readonly IMapper mapper;
+        private readonly ILogger<RegionsController> logger;
 
-        public RegionsController(IRegionRepository regionRepository, IMapper mapper)
+        public RegionsController(
+            IRegionRepository regionRepository,
+            IMapper mapper,
+            ILogger<RegionsController> logger
+        )
         {
             this.regionRepository = regionRepository;
             this.mapper = mapper;
+            this.logger = logger;
         }
 
         [HttpGet]
         [Authorize(Roles = "Reader,Writer")]
         public async Task<IActionResult> GetRegions()
         {
-            var regionsDomain = await regionRepository.GetRegionsAsync();
-
             //var regionsDto = new List<RegionDto>();
             //foreach (var regionDomain in regionsDomain)
             //{
@@ -38,8 +43,15 @@ namespace NZWalks.API.Controllers
             //        RegionImgUrl = regionDomain.RegionImgUrl
             //    });
             //}
+            var regionsDomain = await regionRepository.GetRegionsAsync();
+
+            logger.LogInformation("GetRegions called"); //this will not be visible if log level is warning (on program.cs)
 
             var regionsDto = mapper.Map<IEnumerable<RegionDto>>(regionsDomain);
+
+            logger.LogInformation(
+                $"Finished GetRegions request with : {JsonSerializer.Serialize(regionsDomain)}"
+            );
 
             return Ok(regionsDto);
         }

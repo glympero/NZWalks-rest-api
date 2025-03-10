@@ -40,6 +40,8 @@ namespace NZWalks.API.Controllers
                 pageNumber ?? 1,
                 pageSize ?? 10
             );
+
+            throw new Exception("Something went wrong very badly");
             return Ok(mapper.Map<IEnumerable<WalkDto>>(walks));
         }
 
